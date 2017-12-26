@@ -29,8 +29,8 @@ sed -i '22s:BASEDIR=/usr/local/:BASEDIR=/usr/local/zabbix/:g' /etc/init.d/zabbix
 
 #cat /usr/local/zabbix/etc/zabbix_agentd.conf<<EOF
 cd /usr/local/zabbix/etc/
-sed -i 's/Server=127.0.0.1/Server=szpx-jk.3322.org/g' zabbix_agentd.conf
-sed -i 's/ServerActive=127.0.0.1/ServerActive=szpx-jk.3322.org/g' zabbix_agentd.conf
+sed -i 's/Server=127.0.0.1/Server=abc.org/g' zabbix_agentd.conf
+sed -i 's/ServerActive=127.0.0.1/ServerActive=abc.org/g' zabbix_agentd.conf
 sed -i 's/# ListenPort=10050/ListenPort=10050/g' zabbix_agentd.conf
 
 

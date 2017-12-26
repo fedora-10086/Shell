@@ -1,0 +1,42 @@
+#!/bin/sh
+
+yum -y install curl curl-devel net-snmp net-snmp-devel perl-DBI
+groupadd zabbix 
+useradd -g zabbix zabbix
+usermod -s /sbin/nologin zabbix
+
+cd /root/tools/
+tar xf zabbix-3.0.4.tar.gz
+cd zabbix-3.0.4
+
+./configure --prefix=/usr/local/zabbix --enable-agent && make install
+ln -s /usr/local/zabbix/sbin/zabbix_* /usr/local/sbin/
+ln -s /usr/local/zabbix/bin/* /usr/local/bin/
+
+cd /usr/local/zabbix/etc
+sed -i 's:#Include=:Include=/usr/local/zabbix/etc/zabbix_agentd.conf.d/:g' zabbix_agentd.conf
+sed -i 's:#UnsafeUserParameters=0:UnsafeUserParameters=0/:g' zabbix_agentd.conf
+sed -i 's:UnsafeUserParameters=0:UnsafeUserParameters=1/:g' zabbix_agentd.conf
+
+
+cd /root/tools/zabbix-3.0.4
+
+cp misc/init.d/fedora/core/zabbix_agentd /etc/init.d/zabbix_agentd
+chmod o+x /etc/init.d/zabbix_agentd
+chkconfig zabbix_agentd on
+
+sed -i '22s:BASEDIR=/usr/local/:BASEDIR=/usr/local/zabbix/:g' /etc/init.d/zabbix_agentd
+
+#cat /usr/local/zabbix/etc/zabbix_agentd.conf<<EOF
+cd /usr/local/zabbix/etc/
+sed -i 's/Server=127.0.0.1/Server=szpx-jk.3322.org/g' zabbix_agentd.conf
+sed -i 's/ServerActive=127.0.0.1/ServerActive=szpx-jk.3322.org/g' zabbix_agentd.conf
+sed -i 's/# ListenPort=10050/ListenPort=10050/g' zabbix_agentd.conf
+
+
+/etc/init.d/zabbix_agentd start
+/etc/init.d/snmpd start
+
+exit 0
+
+exit

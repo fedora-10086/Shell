@@ -1,0 +1,43 @@
+#!/bin/sh
+
+cd /root/lnmp_pack/
+mkdir /usr/local/pcre
+tar zxvf pcre-8.36.tar.gz
+cd pcre-8.36
+./configure --prefix=/usr/local/pcre
+make
+make install
+
+cd /root/lnmp_pack/
+mkdir /usr/local/openssl
+tar zxvf openssl-1.0.1t.tar.gz
+cd openssl-1.0.1t
+./config --prefix=/usr/local/openssl
+make
+make install
+cat >>/etc/profile<<EOF
+export PATH=$PATH:/usr/local/openssl/bin
+EOF
+source /etc/profile
+
+cd /root/lnmp_pack/
+mkdir /usr/local/zlib
+tar zxvf zlib-1.2.8.tar.gz
+cd zlib-1.2.8
+./configure --prefix=/usr/local/zlib
+make
+make install
+
+
+groupadd www
+useradd -g www www -s /bin/false
+cd /root/lnmp_pack/
+tar zxvf nginx-1.6.2.tar.gz
+cd nginx-1.6.2
+./configure --prefix=/usr/local/nginx --without-http_memcached_module --user=www --group=www --with-http_stub_status_module --with-http_ssl_module --with-http_gzip_static_module --with-openssl=/root/lnmp_pack/openssl-1.0.1t --with-zlib=/root/lnmp_pack/zlib-1.2.8 --with-pcre=/root/lnmp_pack/pcre-8.36
+
+#注意：--with-openssl=/usr/local/src/openssl-1.0.1j --with-zlib=/usr/local/src/zlib-1.2.8 --with-pcre=/usr/local/src/pcre-8.36指向的是源码包解压的路径，而不是安装的路径，否则会报错
+
+make
+make install
+/usr/local/nginx/sbin/nginx 

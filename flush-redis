@@ -1,0 +1,7 @@
+#!/bin/bash
+#
+redis-cli -h 10.10.10.111 -p 6279 -a passwd <<EOF 
+keys *
+flushdb
+quit
+EOF

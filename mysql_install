@@ -1,0 +1,43 @@
+cd /root/lnmp_pack
+tar xf cmake-3.0.2.tar.gz
+cd cmake-3.0.2
+./configure
+make && make install
+
+cd ..
+groupadd mysql
+useradd -g mysql mysql -s /bin/false
+mkdir -p /data/mysql
+chown -R mysql:mysql /data/mysql
+mkdir -p /usr/local/mysql
+
+tar xf mysql-5.6.21.tar.gz
+cd mysql-5.6.21
+cmake . -DCMAKE_INSTALL_PREFIX=/usr/local/mysql -DMYSQL_DARADIR=/data/mysql -DSYSCONFDIR=/etc
+make && make install
+rm -rf /etc/my.cnf
+cd /usr/local/mysql
+./scripts/mysql_install_db --user=mysql --basedir=/usr/local/mysql --datadir=/data/mysql
+ln -s /usr/local/mysql/my.cnf /etc/my.cnf
+cp ./support-files/mysql.server /etc/rc.d/init.d/mysqld
+chmod 755 /etc/init.d/mysqld
+chkconfig mysqld on
+
+sed -i '46s:basedir=:basedir=/usr/local/mysql:g' /etc/init.d/mysqld
+sed -i '47s:datadir=:datadir=/data/mysql:g' /etc/init.d/mysqld
+
+service mysqld start
+
+export PATH=$PATH:/usr/local/mysql/bin
+source /etc/profile
+
+ln -s /usr/local/mysql/lib/mysql /usr/lib/mysql
+ln -s /usr/local/mysql/include/mysql /usr/include/mysql
+mkdir /var/lib/mysql #创建目录
+ln -s /tmp/mysql.sock /var/lib/mysql/mysql.sock #添加软链接
+
+if [ $? -ne 0 ];then
+	echo "1"
+else
+	echo "0"
+fi

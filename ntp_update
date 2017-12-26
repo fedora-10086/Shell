@@ -1,0 +1,38 @@
+#!/bin/bash
+#
+
+service ntpd stop
+chkconfig ntpd off
+
+rpm -e ntp
+
+if [ -d /root/tools  ];then
+	echo "/root/tools exists."
+else
+	mkdir -p /root/tools
+fi
+
+cd /root/tools
+wget http://archive.ntp.org/ntp4/ntp-4.2/ntp-4.2.8p9.tar.gz
+
+yum install -y libcap-devel
+
+tar xf ntp-4.2.8p9.tar.gz
+
+cd ntp-4.2.8p9
+./configure --prefix=/usr         \
+            --bindir=/usr/sbin    \
+            --sysconfdir=/etc     \
+            --enable-linuxcaps    \
+            --with-lineeditlibs=readline \
+            --docdir=/usr/share/doc/ntp-4.2.8p9 &&
+make
+make install &&
+install -v -o ntp -g ntp -d /var/lib/ntp
+
+ntpdate -d stdtime.gov.hk
+
+echo "01 0 * * * /usr/sbin/ntpdate stdtime.gov.hk &>/var/log/ntpdate.log" >>/var/spool/cron/root
+
+#iptables -I INPUT 20 -p udp --dport 123 -j ACCEPT
+#/etc/init.d/iptables save

@@ -1,0 +1,18 @@
+ 批量创建用户，设置密码为随机8位数
+#!/bin/sh
+for n in `seq -w 10`
+do
+   useradd user$n
+   pass= `echo $RANDOM|md5sum|cut -c 1-8`
+   echo -e "user:user$n pass:$pass" >> /home/passwd
+   echo "$pass"|passwd --stdin user$n
+  
+done
+
+批量删除系统账号user01-user10
+#!/bin/sh
+for n in `seq -w 10`
+do
+   userdel user$n
+   rm -rf /home/user$n
+done

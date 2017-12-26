@@ -1,0 +1,101 @@
+#查看php版本
+/usr/local/php/bin/php -v       
+ 
+#获取php编译时的参数
+/usr/local/php/bin/php -i | grep Command
+
+
+
+#!/bin/sh
+cd  /root/tools
+tar zxvf yasm-1.3.0.tar.gz
+cd yasm-1.3.0
+./configure
+make
+make install
+
+cd  /root/tools
+tar zxvf libmcrypt-2.5.8.tar.gz
+cd libmcrypt-2.5.8
+./configure
+make
+make install
+
+cd  /root/tools
+tar xvf libvpx-v1.3.0.tar.bz2
+cd libvpx-v1.3.0
+./configure --prefix=/usr/local/libvpx --enable-shared --enable-vp9
+make
+make install
+
+cd  /root/tools
+tar zxvf tiff-4.0.3.tar.gz
+cd tiff-4.0.3
+./configure --prefix=/usr/local/tiff --enable-shared
+make
+make install
+
+cd  /root/tools
+tar zxvf libpng-1.6.15.tar.gz
+cd libpng-1.6.15
+./configure --prefix=/usr/local/libpng --enable-shared
+make
+make install
+
+cd  /root/tools
+tar zxvf freetype-2.5.4.tar.gz
+cd freetype-2.5.4
+./configure --prefix=/usr/local/freetype --enable-shared
+make 
+make install 
+
+cd  /root/tools
+tar zxvf jpegsrc.v9a.tar.gz
+cd jpeg-9a
+./configure --prefix=/usr/local/jpeg --enable-shared
+make 
+make install 
+
+cd  /root/tools
+tar zxvf libgd-2.1.0.tar.gz 
+cd libgd-2.1.0 
+./configure --prefix=/usr/local/libgd --enable-shared --with-jpeg=/usr/local/jpeg --with-png=/usr/local/libpng --with-freetype=/usr/local/freetype --with-fontconfig=/usr/local/freetype --with-xpm=/usr/ --with-tiff=/usr/local/tiff --with-vpx=/usr/local/libvpx 
+make 
+make install 
+
+cd  /root/tools
+tar zxvf t1lib-5.1.2.tar.gz
+cd t1lib-5.1.2
+./configure --prefix=/usr/local/t1lib --enable-shared
+make without_doc
+make install
+
+
+
+\cp -frp /usr/lib64/libltdl.so*  /usr/lib/
+\cp -frp /usr/lib64/libXpm.so* /usr/lib/
+
+cd /root/tools
+tar -zvxf php-5.6.3.tar.gz
+cd php-5.6.3
+export LD_LIBRARY_PATH=/usr/local/libgd/lib
+./configure --prefix=/usr/local/php --with-config-file-path=/usr/local/php/etc --with-mysql=/usr/local/mysql --with-mysqli=/usr/local/mysql/bin/mysql_config --with-mysql-sock=/tmp/mysql.sock --with-pdo-mysql=/usr/local/mysql --with-gd --with-png-dir=/usr/local/libpng --with-jpeg-dir=/usr/local/jpeg --with-freetype-dir=/usr/local/freetype --with-xpm-dir=/usr/ --with-vpx-dir=/usr/local/libvpx/ --with-zlib-dir=/usr/local/zlib --with-t1lib=/usr/local/t1lib --with-iconv --enable-libxml --enable-xml --enable-bcmath --enable-shmop --enable-sysvsem --enable-inline-optimization --enable-opcache --enable-mbregex --enable-fpm --enable-mbstring --enable-ftp --enable-gd-native-ttf --with-openssl-dir=/usr/local/openssl --enable-pcntl --enable-sockets --with-xmlrpc --enable-zip --enable-soap --without-pear --with-gettext --enable-session --with-mcrypt --with-curl --enable-ctype 
+
+make 
+make install 
+cp php.ini-production /usr/local/php/etc/php.ini 
+rm -rf /etc/php.ini 
+ln -s /usr/local/php/etc/php.ini /etc/php.ini 
+cp /usr/local/php/etc/php-fpm.conf.default /usr/local/php/etc/php-fpm.conf 
+ln -s /usr/local/php/etc/php-fpm.conf /etc/php-fpm.conf 
+
+#vi /usr/local/php/etc/php-fpm.conf 
+#user = www #设置php-fpm运行账号为www
+#group = www #设置php-fpm运行组为www
+#pid = run/php-fpm.pid #取消前面的分号
+#:wq! #保存退出
+#设置 php-fpm开机启动
+
+cp /root/lnmp/php-5.6.3/sapi/fpm/init.d.php-fpm /etc/rc.d/init.d/php-fpm 
+chmod +x /etc/rc.d/init.d/php-fpm 
+chkconfig php-fpm on 

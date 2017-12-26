@@ -1,0 +1,42 @@
+
+shell脚本查看任意网段的在线主机
+主要是根据子网掩码来计算需要ping的主机个数  适用于经过子网掩码划分过的网络 最大支持/24 最多256个IP包括网络位地址和主机位地址,脚本如下
+
+    #!/bin/bash
+    declare -i Inet
+    declare -i Snet
+    [[ $1 =~ ((2[0-4][0-9]|25[0-5]|1?[0-9]?[0-9])\.){3}(2[0-4][0-9]|25[0-5]|1?[0-9]?[0-9])\/(2[4-9]|3[0-2]) ]] #正则表达式验证是否为正>确格式
+    if [ $? -ne 0 ] ;then #判断格式是否配正确匹配
+    {
+    echo ” Usage:$0 172.18.0.0/24-32.” #如果格式未被正确匹配返回250状态码，并提示使用方法
+    exit 250
+    }
+    fi
+    Inet=`echo "$1" | cut -d"." -f4 | cut -d"/" -f1` #获取Ip地址位
+    Iseg=`echo "$1" | cut -d"/" -f2` #获取子网掩码位
+    Ipv4=`echo "$1" | cut -d"." -f1,2,3` #获取主机位
+    let Smask=32-$Iseg #计算子网掩码反掩码位数
+    Sips=$[2**$Smask] #计算出指定网络的IP数
+    Snet=$[ $Inet + $Sips -1 ] #从指定主机数到输出的主机个数
+    [ $Snet -gt 255 ] && Sips=$[ 256 – $Inet ] && Shosts=255 || Shosts=$[ $Inet + $Sips -1 ]
+    echo “反向子网掩码位为：$Smask” #输出反掩码位数
+    echo “要查找的地址数为：$Sips” #输出主机个数
+    echo “子网掩码的位数为：$Iseg” #输出子网掩码
+    echo “Ipv4的首个地址为：${Ipv4}.$Inet” #输出网络地址位
+    echo “查看的网段地址为：${Ipv4}.${Inet}-${Ipv4}.${Shosts}” #输出匹配的网络位
+    if [ $Snet -gt 255 ] ;then #当地址数溢出时的补救措施
+    {
+    Snet=255 #主机数强制为255个
+    }
+    fi
+    for i in `seq $Inet $Snet`; #for循环从指定主机开始到指定网段结束的IP个数
+    do
+    ping -c1 -W1 $Ipv4.$i >/dev/null 2>&1 && echo -e "\033[32m$Ipv4.$i is \tup \033[0m" || echo -e "$Ipv4.$i is\033[31m \tdown \033[0m"
+    read -dq -s -t 1 wode && exit #read接受到用户输入的q后终止循环并退出脚本
+    #ping 判断主机是在线还是 不在线
+    done
+    unset Inet Iseq Ipv4 wjy Smask Sips Snet wode #释放上边使用到的变量
+
+使用方法  标准的IP地址/子网掩码的位数  譬如：172.18.252.0/24   172.18.253.20/28   172.18.6.110/30 192.168.1.0/24
+
+        主要是根据子网掩码来计算需要ping的主机个数  适用于经过子网掩码划分过的网络 最大支持/24 最多256个IP包括网络位地址和主机位地址

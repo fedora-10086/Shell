@@ -1,0 +1,39 @@
+#!/bin/sh
+yum -y install curl curl-devel net-snmp net-snmp-devel perl-DBI
+
+groupadd zabbix 
+useradd -g zabbix zabbix
+usermod -s /sbin/nologin zabbix
+
+cd /root/tools
+tar zxvf zabbix-2.0.6.tar.gz
+cd zabbix-2.0.6
+./configure --prefix=/usr/local/zabbix --enable-agent && make install
+ln -s /usr/local/zabbix/sbin/zabbix_* /usr/local/sbin/
+
+cp misc/init.d/tru64/zabbix_agentd /etc/init.d/zabbix_agentd
+chmod o+x /etc/init.d/zabbix_agentd
+
+#cat /usr/local/zabbix/etc/zabbix_agentd.conf<<EOF
+cd /usr/local/zabbix/etc/
+sed -i 's/Server=127.0.0.1/Server=szpx-jk.3322.org/g' zabbix_agentd.conf
+sed -i 's/ServerActive=127.0.0.1/ServerActive=szpx-jk.3322.org/g' zabbix_agentd.conf
+sed -i 's/# ListenPort=10050/ListenPort=10050/g' zabbix_agentd.conf
+
+cat >>/etc/rc.d/rc.local<<eof
+/etc/init.d/zabbix_agentd start
+/etc/init.d/snmpd start
+eof
+
+/etc/init.d/zabbix_agentd start
+/etc/init.d/snmpd start
+
+iptables -I INPUT -p tcp --dport 10050 -j ACCEPT
+iptables -I OUTPUT -p tcp --sport 10050 -j ACCEPT
+/etc/init.d/iptables save
+service iptables restart
+
+
+exit 0
+
+exit
